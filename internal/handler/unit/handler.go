@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/srjorgedev/dblboxgo/src/internal/domain/unit"
+	"github.com/srjorgedev/dblboxgo/internal/domain/unit"
 )
 
 type Handler struct {

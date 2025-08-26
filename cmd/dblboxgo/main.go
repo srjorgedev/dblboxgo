@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/srjorgedev/dblboxgo/src/internal/db"
-	handler "github.com/srjorgedev/dblboxgo/src/internal/handler/unit"
-	repository "github.com/srjorgedev/dblboxgo/src/internal/repository/unit"
+	"github.com/srjorgedev/dblboxgo/internal/db"
+	handler "github.com/srjorgedev/dblboxgo/internal/handler/unit"
+	repository "github.com/srjorgedev/dblboxgo/internal/repository/unit"
 )
 
 func main() {

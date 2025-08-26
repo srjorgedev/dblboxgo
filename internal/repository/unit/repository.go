@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/srjorgedev/dblboxgo/src/internal/domain/unit"
+	"github.com/srjorgedev/dblboxgo/internal/domain/unit"
 )
 
 type SQLUnitRepository struct {
