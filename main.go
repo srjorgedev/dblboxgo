@@ -37,7 +37,12 @@ func main() {
 		unitRoutes.GET("/sum", unitHandler.GetAllUnitSummaries)
 	}
 
-	if err := r.Run(":" + os.Getenv("PORT")); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	if err := r.Run(":" + port); err != nil {
 		log.Fatal(err)
 	}
 }
