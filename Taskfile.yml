@@ -1,14 +1,12 @@
 version: "3"
 
 tasks:
-  dev:
-    cmds:
-      - go run src/cmd/dblboxgo/main.go
-    desc: Run the development server
-
   build:
     cmds:
-      - go build -o ./bin/app.exe ./cmd/dblboxgo
+      - go build -o bin/app
     desc: Build the application
-    generates:
-      - ./bin/app.exe
+
+  run:
+    cmds:
+      - bin/app
+    desc: Run the application
