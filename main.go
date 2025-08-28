@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/srjorgedev/dblboxgo/internal/db"
-	handler "github.com/srjorgedev/dblboxgo/internal/handler/unit"
-	repository "github.com/srjorgedev/dblboxgo/internal/repository/unit"
+	handlerData "github.com/srjorgedev/dblboxgo/internal/handler/data"
+	handlerUnit "github.com/srjorgedev/dblboxgo/internal/handler/unit"
+	repositoryData "github.com/srjorgedev/dblboxgo/internal/repository/data"
+	repositoryUnit "github.com/srjorgedev/dblboxgo/internal/repository/unit"
 )
 
 func main() {
@@ -26,8 +29,11 @@ func main() {
 
 	db.CreateTables(cn)
 
-	unitRepo := repository.NewSQLUnitRepository(cn)
-	unitHandler := handler.NewUnitHandler(unitRepo)
+	unitRepo := repositoryUnit.NewSQLUnitRepository(cn)
+	unitHandler := handlerUnit.NewUnitHandler(unitRepo)
+
+	dataRepo := repositoryData.NewSQLDataRepository(cn)
+	dataHandler := handlerData.NewDataHandler(dataRepo)
 
 	r := gin.Default()
 
@@ -37,6 +43,17 @@ func main() {
 		unitRoutes.GET("/sum", unitHandler.GetAllUnitSummaries)
 	}
 
+	dataRoutes := r.Group("/api/v1/data")
+	{
+		dataRoutes.GET("/tags", dataHandler.GetTags)
+		dataRoutes.GET("/chapters", dataHandler.GetChapters)
+		dataRoutes.GET("/rarities", dataHandler.GetRarities)
+		dataRoutes.GET("/types", dataHandler.GetTypes)
+		dataRoutes.GET("/affinities", dataHandler.GetAffinities)
+	}
+
+	go startHealthCheck()
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -45,4 +62,19 @@ func main() {
 	if err := r.Run(":" + port); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func startHealthCheck() {
+	ticker := time.NewTicker(50 * time.Minute)
+	defer ticker.Stop()
+
+	health()
+
+	for range ticker.C {
+		health()
+	}
+}
+
+func health() {
+	fmt.Println("[ OK ] The system is ok. ", time.Now())
 }
