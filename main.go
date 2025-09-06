@@ -39,6 +39,7 @@ func main() {
 
 	unitRoutes := r.Group("/api/v1/unit")
 	{
+		unitRoutes.GET("/:id", unitHandler.GetUnitByID)
 		unitRoutes.GET("/sum/:id", unitHandler.GetUnitSummaryByID)
 		unitRoutes.GET("/sum", unitHandler.GetAllUnitSummaries)
 	}
@@ -76,5 +77,5 @@ func startHealthCheck() {
 }
 
 func health() {
-	fmt.Println("[ OK ] The system is ok. ", time.Now())
+	fmt.Println("[ API ] The system is ok. ", time.Now())
 }

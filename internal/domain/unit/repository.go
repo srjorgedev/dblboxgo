@@ -12,7 +12,7 @@ type Repository interface {
 	GetUnitTags(unitID string) ([]UnitParametersTag, error)
 	GetUnitAffinity(unitID string) ([]UnitParametersAffinity, error)
 	GetUnitTraits(unitID string) ([]UnitParametersTraits, error)
-	GetUnitHeldCards(unitID string) ([]UnitParametersHeldCards, error)
+	GetUnitHeldCards(unitID string) (*UnitParametersHeldCards, error)
 	GetUnitStatsMin(unitID string) (*UnitParametersStatsMin, error)
 	GetUnitStatsMax(unitID string) (*UnitParametersStatsMax, error)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/srjorgedev/dblboxgo/internal/domain/unit"
@@ -19,16 +20,16 @@ type SQLUnitRepository struct {
 func NewSQLUnitRepository(db *sql.DB) *SQLUnitRepository {
 	repo := &SQLUnitRepository{db: db}
 
-	func() {
+	go func() {
 		units, err := repo.GetAllUnitSummariesCached()
 		if err != nil {
-			fmt.Printf("Failed to preload units: %v\n", err)
+			fmt.Printf("[ API ] Failed to preload units: %v\n", err)
 			return
 		}
 		repo.cacheLock.Lock()
 		repo.cache = units
 		repo.cacheLock.Unlock()
-		fmt.Printf("Preloaded %d units into cache\n", len(units))
+		fmt.Printf("[ API ] Preloaded %d units into cache\n", len(units))
 	}()
 
 	return repo
@@ -53,7 +54,7 @@ func (r *SQLUnitRepository) GetUnitByID(id string) (*unit.Unit, error) {
 		&general.ID,
 		&general.NumID,
 		&general.Chapter.ID, &general.Chapter.DataEs,
-		&general.Rarity.ID, &general.Chapter.DataEs,
+		&general.Rarity.ID, &general.Rarity.DataEs,
 		&general.Type.ID, &general.Type.DataEs,
 		&general.Transform,
 		&general.LF,
@@ -100,35 +101,17 @@ func (r *SQLUnitRepository) GetUnitByID(id string) (*unit.Unit, error) {
 	}
 	u.Affinity = affinity
 
-	traits, err := r.GetUnitTraits(id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get unit traits: %w", err)
-	}
-	u.Traits = traits
-
 	heldCards, err := r.GetUnitHeldCards(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get unit held cards: %w", err)
 	}
 	u.HeldCards = heldCards
 
-	statsMin, err := r.GetUnitStatsMin(id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get unit stats min: %w", err)
-	}
-	u.StatsMin = *statsMin
-
-	statsMax, err := r.GetUnitStatsMax(id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get unit stats max: %w", err)
-	}
-	u.StatsMax = *statsMax
-
 	return u, nil
 }
 
 func (r *SQLUnitRepository) GetAllUnitSummariesCached() ([]*unit.UnitSummary, error) {
-	fmt.Println("Checking if cache exists")
+	fmt.Println("[ API ] Checking if cache exists")
 
 	// Check if cache exists
 	r.cacheLock.RLock()
@@ -138,7 +121,7 @@ func (r *SQLUnitRepository) GetAllUnitSummariesCached() ([]*unit.UnitSummary, er
 	}
 	r.cacheLock.RUnlock()
 
-	fmt.Println("Cache not found, fetching from DB")
+	fmt.Println("[ API ] Cache not found, fetching from DB")
 
 	// Cache not set, fetch from DB
 	units, err := r.GetAllUnitSummaries()
@@ -158,20 +141,30 @@ func (r *SQLUnitRepository) GetAllUnitSummaries() ([]*unit.UnitSummary, error) {
 	bchacutURL := os.Getenv("BCHACUT_URL")
 	bchaicoURL := os.Getenv("BCHAICO_URL")
 
-	// Query all general unit info
 	rows, err := r.db.Query(`
-        SELECT
-            u._id, u.num_id, 
-            c._id,
-            r._id,
-            t._id,
-            u.transform, u.lf, u.zenkai, u.tag_switch
-        FROM unit_parameters_general u
-        JOIN data_chapter c ON u.chapter = c._id
-        JOIN data_rarity r ON u.rarity = r._id
-        JOIN data_type t ON u.type = t._id
-		ORDER BY u._id DESC
-    `)
+		SELECT 
+			u._id,
+			u.num_id,
+			c._id     AS chapter_id,
+			r._id     AS rarity_id,
+			t._id     AS type_id,
+			u.transform,
+			u.lf,
+			u.zenkai,
+			u.tag_switch,
+			GROUP_CONCAT(DISTINCT tg._id) AS tags,
+			GROUP_CONCAT(DISTINCT af._id) AS affinity
+		FROM unit_parameters_general u
+		JOIN data_chapter c ON u.chapter = c._id
+		JOIN data_rarity r  ON u.rarity  = r._id
+		JOIN data_type t    ON u.type    = t._id
+		LEFT JOIN unit_parameters_tag ut ON u._id = ut._unit_id
+		LEFT JOIN data_tag tg ON ut.tag = tg._id
+		LEFT JOIN unit_parameters_affinity ua ON u._id = ua._unit_id
+		LEFT JOIN data_affinity af ON ua.affinity = af._id
+		GROUP BY u._id
+		ORDER BY u._id DESC;
+	`)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get units: %w", err)
 	}
@@ -181,6 +174,9 @@ func (r *SQLUnitRepository) GetAllUnitSummaries() ([]*unit.UnitSummary, error) {
 
 	for rows.Next() {
 		u := &unit.UnitSummary{}
+
+		var tagsRaw, affinityRaw sql.NullString
+
 		if err := rows.Scan(
 			&u.ID,
 			&u.NumID,
@@ -191,6 +187,8 @@ func (r *SQLUnitRepository) GetAllUnitSummaries() ([]*unit.UnitSummary, error) {
 			&u.LF,
 			&u.Zenkai,
 			&u.TagSwitch,
+			&tagsRaw,
+			&affinityRaw,
 		); err != nil {
 			return nil, fmt.Errorf("failed to scan unit: %w", err)
 		}
@@ -217,26 +215,22 @@ func (r *SQLUnitRepository) GetAllUnitSummaries() ([]*unit.UnitSummary, error) {
 			u.Images = append(u.Images, image3)
 		}
 
-		// Add tags
-		tags, err := r.GetUnitTags(u.ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get unit tags: %w", err)
-		}
-		u.Tags = make([]int, len(tags))
-
-		for i, t := range tags {
-			u.Tags[i] = t.ID
+		// Parse tags into []int
+		if tagsRaw.Valid && tagsRaw.String != "" {
+			for _, t := range strings.Split(tagsRaw.String, ",") {
+				if id, err := strconv.Atoi(t); err == nil {
+					u.Tags = append(u.Tags, id)
+				}
+			}
 		}
 
-		// Add affinity
-		affinity, err := r.GetUnitAffinity(u.ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get unit affinity: %w", err)
-		}
-		u.Affinity = make([]int, len(affinity))
-
-		for i, a := range affinity {
-			u.Affinity[i] = a.ID
+		// Parse affinity into []int
+		if affinityRaw.Valid && affinityRaw.String != "" {
+			for _, a := range strings.Split(affinityRaw.String, ",") {
+				if id, err := strconv.Atoi(a); err == nil {
+					u.Affinity = append(u.Affinity, id)
+				}
+			}
 		}
 
 		units = append(units, u)
@@ -502,21 +496,19 @@ func (r *SQLUnitRepository) GetUnitTraits(unitID string) ([]unit.UnitParametersT
 	return traits, nil
 }
 
-func (r *SQLUnitRepository) GetUnitHeldCards(unitID string) ([]unit.UnitParametersHeldCards, error) {
-	rows, err := r.db.Query("SELECT card1, card2 FROM unit_parameters_held_cards WHERE _unit_id = ?", unitID)
+func (r *SQLUnitRepository) GetUnitHeldCards(unitID string) (*unit.UnitParametersHeldCards, error) {
+	heldCards := &unit.UnitParametersHeldCards{}
+	err := r.db.QueryRow(`
+		SELECT
+			card1, card2 
+		FROM unit_parameters_held_cards
+		WHERE _unit_id = ?
+	`, unitID).Scan(
+		&heldCards.Card1,
+		&heldCards.Card2,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get unit held cards: %w", err)
-	}
-	defer rows.Close()
-
-	var heldCards []unit.UnitParametersHeldCards
-	for rows.Next() {
-		var card unit.UnitParametersHeldCards
-		err := rows.Scan(&card.Card1, &card.Card2)
-		if err != nil {
-			return nil, fmt.Errorf("failed to scan unit held cards: %w", err)
-		}
-		heldCards = append(heldCards, card)
 	}
 	return heldCards, nil
 }

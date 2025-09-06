@@ -1,27 +1,26 @@
-# Usa la imagen oficial de Go para compilar
-FROM golang:1.21 AS builder
+# Etapa de construcción
+FROM golang:1.24 AS builder
 
-# Establece el directorio de trabajo
 WORKDIR /app
 
-# Copia los archivos go.mod y go.sum y descarga dependencias
+# Copia los archivos de dependencias y descarga
 COPY go.mod go.sum ./
 RUN go mod download
 
 # Copia el resto del código
 COPY . .
 
-# Compila la app en modo release
+# Compila la aplicación
 RUN go build -o main .
 
-# Usa una imagen liviana para producción
-FROM gcr.io/distroless/base-debian11
+# Etapa de ejecución
+FROM debian:bookworm-slim
 
-# Copia el binario desde el builder
-COPY --from=builder /app/main /app/main
+WORKDIR /app
+COPY --from=builder /app/main .
 
-# Expone el puerto que tu app usará
+# Expone el puerto (usa la variable PORT para servicios como Koyeb/Render/Fly.io)
+ENV PORT=8080
 EXPOSE 8080
 
-# Comando para ejecutar la app
-ENTRYPOINT ["/app/main"]
+CMD ["./main"]

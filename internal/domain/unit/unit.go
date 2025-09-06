@@ -23,13 +23,13 @@ type Unit struct {
 	ZenkaiKitType int    `json:"zenkai_kit_type" db:"zenkai_kit_type"`
 	TagSwitch     bool   `json:"tag_switch" db:"tag_switch"`
 
-	Names     []UnitParametersName      `json:"names,omitempty"`
-	Tags      []UnitParametersTag       `json:"tags,omitempty"`
-	Affinity  []UnitParametersAffinity  `json:"affinity,omitempty"`
-	Traits    []UnitParametersTraits    `json:"traits,omitempty"`
-	HeldCards []UnitParametersHeldCards `json:"held_cards,omitempty"`
-	StatsMin  UnitParametersStatsMin    `json:"stats_min,omitempty"`
-	StatsMax  UnitParametersStatsMax    `json:"stats_max,omitempty"`
+	Names     []UnitParametersName     `json:"names,omitempty"`
+	Tags      []UnitParametersTag      `json:"tags,omitempty"`
+	Affinity  []UnitParametersAffinity `json:"affinity,omitempty"`
+	Traits    []UnitParametersTraits   `json:"traits,omitempty"`
+	HeldCards *UnitParametersHeldCards `json:"held_cards,omitempty"`
+	StatsMin  UnitParametersStatsMin   `json:"stats_min,omitempty"`
+	StatsMax  UnitParametersStatsMax   `json:"stats_max,omitempty"`
 }
 
 type UnitSummary struct {
@@ -77,7 +77,7 @@ type UnitParametersGeneral struct {
 }
 
 type UnitParametersName struct {
-	Name string `db:"name" json:"name"`
+	Name string `db:"name" json:",inline"`
 }
 
 type UnitParametersAffinity struct {

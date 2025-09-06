@@ -18,7 +18,7 @@ func NewSQLDataRepository(db *sql.DB) *SQLDataRepository {
 	repo := &SQLDataRepository{db: db}
 
 	if _, err := repo.CacheData(); err != nil {
-		fmt.Println("warning: could not warm up cache:", err)
+		fmt.Println("[ API ] warning: could not warm up cache:", err)
 	}
 
 	return repo
@@ -49,31 +49,31 @@ func (r *SQLDataRepository) GetAllData() (*data.AllData, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Cached tags: %d\n", len(tags))
+	fmt.Printf("[ API ] Cached tags: %d\n", len(tags))
 
 	chapters, err := r.GetAllChapters()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Cached chapters: %d\n", len(chapters))
+	fmt.Printf("[ API ] Cached chapters: %d\n", len(chapters))
 
 	rarities, err := r.GetAllRarities()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Cached rarities: %d\n", len(rarities))
+	fmt.Printf("[ API ] Cached rarities: %d\n", len(rarities))
 
 	types, err := r.GetAllTypes()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Cached types: %d\n", len(types))
+	fmt.Printf("[ API ] Cached types: %d\n", len(types))
 
 	affinities, err := r.GetAllAffinities()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Cached affinities: %d\n", len(affinities))
+	fmt.Printf("[ API ] Cached affinities: %d\n", len(affinities))
 
 	allData := &data.AllData{
 		DataTag:       tags,
