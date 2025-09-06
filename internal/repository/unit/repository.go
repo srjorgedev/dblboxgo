@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/srjorgedev/dblboxgo/internal/domain/unit"
+	"github.com/srjorgedev/dblboxgo/pkg"
 )
 
 type SQLUnitRepository struct {
@@ -107,6 +108,8 @@ func (r *SQLUnitRepository) GetUnitByID(id string) (*unit.Unit, error) {
 	}
 	u.HeldCards = heldCards
 
+	u.Images = pkg.GetUnitImages(u.NumID, u.Transform, u.TagSwitch)
+
 	return u, nil
 }
 
@@ -138,8 +141,6 @@ func (r *SQLUnitRepository) GetAllUnitSummariesCached() ([]*unit.UnitSummary, er
 }
 
 func (r *SQLUnitRepository) GetAllUnitSummaries() ([]*unit.UnitSummary, error) {
-	bchacutURL := os.Getenv("BCHACUT_URL")
-	bchaicoURL := os.Getenv("BCHAICO_URL")
 
 	rows, err := r.db.Query(`
 		SELECT 
@@ -193,27 +194,7 @@ func (r *SQLUnitRepository) GetAllUnitSummaries() ([]*unit.UnitSummary, error) {
 			return nil, fmt.Errorf("failed to scan unit: %w", err)
 		}
 
-		// Add images
-		baseImage := unit.Images{
-			BChaCut: bchacutURL + strconv.Itoa(u.NumID) + ".webp",
-			BChaIco: bchaicoURL + strconv.Itoa(u.NumID) + ".webp",
-		}
-		u.Images = append(u.Images, baseImage)
-
-		if u.Transform || u.TagSwitch {
-			image2 := unit.Images{
-				BChaCut: bchacutURL + strconv.Itoa(u.NumID) + "2.webp",
-				BChaIco: bchaicoURL + strconv.Itoa(u.NumID) + "2.webp",
-			}
-			u.Images = append(u.Images, image2)
-		}
-		if u.Transform && u.TagSwitch {
-			image3 := unit.Images{
-				BChaCut: bchacutURL + strconv.Itoa(u.NumID) + "3.webp",
-				BChaIco: bchaicoURL + strconv.Itoa(u.NumID) + "3.webp",
-			}
-			u.Images = append(u.Images, image3)
-		}
+		u.Images = pkg.GetUnitImages(u.NumID, u.Transform, u.TagSwitch)
 
 		// Parse tags into []int
 		if tagsRaw.Valid && tagsRaw.String != "" {

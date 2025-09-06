@@ -23,6 +23,7 @@ type Unit struct {
 	ZenkaiKitType int    `json:"zenkai_kit_type" db:"zenkai_kit_type"`
 	TagSwitch     bool   `json:"tag_switch" db:"tag_switch"`
 
+	Images    []Images                 `json:"images"`
 	Names     []UnitParametersName     `json:"names,omitempty"`
 	Tags      []UnitParametersTag      `json:"tags,omitempty"`
 	Affinity  []UnitParametersAffinity `json:"affinity,omitempty"`
