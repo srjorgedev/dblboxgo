@@ -164,7 +164,7 @@ func (r *SQLUnitRepository) GetAllUnitSummaries() ([]*unit.UnitSummary, error) {
 		LEFT JOIN unit_parameters_affinity ua ON u._id = ua._unit_id
 		LEFT JOIN data_affinity af ON ua.affinity = af._id
 		GROUP BY u._id
-		ORDER BY u._id DESC;
+		ORDER BY u.rarity DESC, u.lf DESC , u._id DESC;
 	`)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get units: %w", err)
