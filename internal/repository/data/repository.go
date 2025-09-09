@@ -190,27 +190,3 @@ func (r *SQLDataRepository) GetCachedAffinities() ([]*data.Data, error) {
 	return r.cache.DataAffinitie, nil
 }
 
-// ReadAllAffinities implements data.Repository.
-func (r *SQLDataRepository) ReadAllAffinities() ([]*data.Data, error) {
-	panic("unimplemented")
-}
-
-// ReadAllChapters implements data.Repository.
-func (r *SQLDataRepository) ReadAllChapters() ([]*data.Data, error) {
-	panic("unimplemented")
-}
-
-// ReadAllRarities implements data.Repository.
-func (r *SQLDataRepository) ReadAllRarities() ([]*data.Data, error) {
-	panic("unimplemented")
-}
-
-// ReadAllTags implements data.Repository.
-func (r *SQLDataRepository) ReadAllTags() ([]*data.Data, error) {
-	panic("unimplemented")
-}
-
-// ReadAllTypes implements data.Repository.
-func (r *SQLDataRepository) ReadAllTypes() ([]*data.Data, error) {
-	panic("unimplemented")
-}

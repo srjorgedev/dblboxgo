@@ -59,8 +59,7 @@ func CreateTables(db *sql.DB) {
 			card2 TEXT
 		);
 	`,
-		`
-		CREATE TABLE IF NOT EXISTS unit_parameters_stats_min (
+		`CREATE TABLE IF NOT EXISTS unit_parameters_stats_min (
 			_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
 			_unit_id TEXT,
 			health INTEGER,
@@ -72,8 +71,7 @@ func CreateTables(db *sql.DB) {
 			ki_recovery INTEGER
 		);
 	`,
-		`
-		CREATE TABLE IF NOT EXISTS unit_parameters_stats_max (
+		`CREATE TABLE IF NOT EXISTS unit_parameters_stats_max (
 			_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
 			_unit_id TEXT,
 			health INTEGER,
@@ -91,35 +89,95 @@ func CreateTables(db *sql.DB) {
 		data_es TEXT,
 		data_fr TEXT,
 		data_jp TEXT
-	)`,
+	);`,
 		`CREATE TABLE IF NOT EXISTS data_chapter (
 		_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
 		data_en TEXT,
 		data_es TEXT,
 		data_fr TEXT,
 		data_jp TEXT
-	)`,
+	);`,
 		`CREATE TABLE IF NOT EXISTS data_rarity (
 		_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
 		data_en TEXT,
 		data_es TEXT,
 		data_fr TEXT,
 		data_jp TEXT
-	)`,
+	);`,
 		`CREATE TABLE IF NOT EXISTS data_type (
 		_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
 		data_en TEXT,
 		data_es TEXT,
 		data_fr TEXT,
 		data_jp TEXT
-	)`,
+	);`,
 		`CREATE TABLE IF NOT EXISTS data_affinity (
 		_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
 		data_en TEXT,
 		data_es TEXT,
 		data_fr TEXT,
 		data_jp TEXT
-	)`,
+	);`,
+		`CREATE TABLE IF NOT EXISTS data_equipment_rarity (
+		_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
+		data_en TEXT,
+		data_es TEXT,
+		data_fr TEXT,
+		data_jp TEXT
+	);`,
+		`CREATE TABLE IF NOT EXISTS equipment_general (
+		_id INTEGER UNIQUE PRIMARY KEY,
+		name_en TEXT,
+		name_es TEXT,
+		name_fr TEXT,
+		name_jp TEXT,
+		equipment_rarity INTEGER,
+		awaken BOOLEAN
+	);`,
+		`CREATE TABLE IF NOT EXISTS equipment_trait (
+		_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
+		_equipment_id INTEGER,
+		trait_tag INTEGER,
+		trait_chapter INTEGER,
+		trait_type INTEGER,
+		trait_affinity INTEGER,
+		trait_rarity INTEGER,
+		trait_name TEXT,
+		trait_unit TEXT,
+		trait_banner TEXT
+	);`,
+		`CREATE TABLE IF NOT EXISTS equipment_slot_1 (
+		_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
+		_equipment_id INTEGER,
+		slot_en TEXT,
+		slot_es TEXT,
+		slot_fr TEXT,
+		slot_jp TEXT
+	);`,
+		`CREATE TABLE IF NOT EXISTS equipment_slot_2 (
+		_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
+		_equipment_id INTEGER,
+		slot_en TEXT,
+		slot_es TEXT,
+		slot_fr TEXT,
+		slot_jp TEXT
+	);`,
+		`CREATE TABLE IF NOT EXISTS equipment_slot_3 (
+		_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
+		_equipment_id INTEGER,
+		slot_en TEXT,
+		slot_es TEXT,
+		slot_fr TEXT,
+		slot_jp TEXT
+	);`,
+		`CREATE TABLE IF NOT EXISTS equipment_slot_4 (
+		_id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
+		_equipment_id INTEGER,
+		slot_en TEXT,
+		slot_es TEXT,
+		slot_fr TEXT,
+		slot_jp TEXT
+	);`,
 	}
 
 	for _, table := range tables {

@@ -9,9 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/srjorgedev/dblboxgo/internal/db"
+
 	handlerData "github.com/srjorgedev/dblboxgo/internal/handler/data"
+	handlerEquipment "github.com/srjorgedev/dblboxgo/internal/handler/equipment"
 	handlerUnit "github.com/srjorgedev/dblboxgo/internal/handler/unit"
+
 	repositoryData "github.com/srjorgedev/dblboxgo/internal/repository/data"
+	repositoryEquipment "github.com/srjorgedev/dblboxgo/internal/repository/equipment"
 	repositoryUnit "github.com/srjorgedev/dblboxgo/internal/repository/unit"
 )
 
@@ -35,6 +39,9 @@ func main() {
 	dataRepo := repositoryData.NewSQLDataRepository(cn)
 	dataHandler := handlerData.NewDataHandler(dataRepo)
 
+	equipmentRepo := repositoryEquipment.NewSQLEquipmentRepository(cn)
+	equipmentHandler := handlerEquipment.NewEquipmentHandler(equipmentRepo)
+
 	r := gin.Default()
 
 	unitRoutes := r.Group("/api/v1/unit")
@@ -51,6 +58,13 @@ func main() {
 		dataRoutes.GET("/rarities", dataHandler.GetRarities)
 		dataRoutes.GET("/types", dataHandler.GetTypes)
 		dataRoutes.GET("/affinities", dataHandler.GetAffinities)
+	}
+
+	equipmentRoutes := r.Group("/api/v1/equip")
+	{
+		// equipmentRoutes.GET("/:id", equipmentHandler.GetEquipmentByID)
+		// equipmentRoutes.GET("/sum/:id", equipmentHandler.GetEquipmentSummaryByID)
+		equipmentRoutes.GET("/sum", equipmentHandler.GetAllEquipmentSummaries)
 	}
 
 	go startHealthCheck()

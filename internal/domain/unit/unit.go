@@ -78,7 +78,10 @@ type UnitParametersGeneral struct {
 }
 
 type UnitParametersName struct {
-	Name string `db:"name" json:",inline"`
+	NameES string `db:"name_es" json:"name_es"`
+	NameEN string `db:"name_en" json:"name_en"`
+	NameFR string `db:"name_fr" json:"name_fr"`
+	NameJP string `db:"name_jp" json:"name_jp"`
 }
 
 type UnitParametersAffinity struct {

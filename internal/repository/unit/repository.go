@@ -386,7 +386,7 @@ func (r *SQLUnitRepository) GetUnitSummaryByID(id string) (*unit.UnitSummary, er
 }
 
 func (r *SQLUnitRepository) GetUnitNames(unitID string) ([]unit.UnitParametersName, error) {
-	rows, err := r.db.Query("SELECT name FROM unit_parameters_name WHERE _unit_id = ?", unitID)
+	rows, err := r.db.Query("SELECT name_es, name_en, name_fr, name_jp FROM unit_parameters_name WHERE _unit_id = ?", unitID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get unit names: %w", err)
 	}
@@ -395,7 +395,8 @@ func (r *SQLUnitRepository) GetUnitNames(unitID string) ([]unit.UnitParametersNa
 	var names []unit.UnitParametersName
 	for rows.Next() {
 		var name unit.UnitParametersName
-		err := rows.Scan(&name.Name)
+		err := rows.Scan(&name.NameES, &name.NameEN, &name.NameFR, &name.NameJP)
+
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan unit name: %w", err)
 		}
