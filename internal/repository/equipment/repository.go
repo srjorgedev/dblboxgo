@@ -55,7 +55,20 @@ func (r *SQLEquipmentRepository) GetAllEquipmentSummariesCached() ([]*equipment.
 }
 
 func (r *SQLEquipmentRepository) GetAllEquipmentSummaries() ([]*equipment.EquipmentSummary, error) {
-	rows, err := r.db.Query(`SELECT _id, name_en, name_es, name_fr, name_jp, equipment_rarity, awaken, COALESCE(awaken_from, 0) as awaken_from FROM equipment_general`)
+	rows, err := r.db.Query(`SELECT
+  _id,
+  name_en,
+  name_es,
+  name_fr,
+  name_jp,
+  equipment_rarity,
+  awaken,
+  COALESCE(awaken_from, 0) AS awaken_from
+FROM
+  equipment_general
+ORDER BY
+  equipment_rarity DESC,
+  _id DESC`)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get equipment summaries: %w", err)
 	}
