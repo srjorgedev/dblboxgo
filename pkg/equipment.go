@@ -13,13 +13,13 @@ func GetEquipmentImages(numID int, rarity int, awaken bool, awakenFrom int) equi
 
 	images := equipment.EquipmentImages{}
 
-	if awaken {
-		images.RarityImage = equipICO+ strconv.Itoa(rarity) + "A.webp"
-		images.IconImage = equipIMG  + strconv.Itoa(awakenFrom) + "A.webp"
-	}
-
 	images.RarityImage = equipICO + strconv.Itoa(rarity) + ".webp"
 	images.IconImage = equipIMG + strconv.Itoa(numID) + ".webp"
+
+	if awaken {
+		images.RarityImage = equipICO + strconv.Itoa(rarity) + "A.webp"
+		images.IconImage = equipIMG + strconv.Itoa(awakenFrom) + ".webp"
+	}
 
 	return images
 }
